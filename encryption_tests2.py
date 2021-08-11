@@ -15,7 +15,7 @@ key = base64.urlsafe_b64encode(m.digest())
 fernet = Fernet(key)
 
 def get_file_contents(path):
-    f = codecs.open(path, 'r')
+    f = codecs.open(path, 'rb')
     contents = f.read()
     #print(contents)
     f.close()
@@ -25,16 +25,20 @@ def get_file_contents(path):
 if args.encrypt != None:
     contents = get_file_contents(args.encrypt)
     print("encrypting")
-    f = codecs.open(args.encrypt, 'w')
-    f.write(fernet.encrypt(contents.encode()).decode())
+    f = codecs.open(args.encrypt, 'wb')
+    try:
+        contents = fernet.encrypt(contents)
+    except:
+        print("failed to encrypt")
+    f.write(contents)
     f.close()
 
 if args.decrypt != None:
     contents = get_file_contents(args.decrypt)
     print("decrypting")
-    f = codecs.open(args.decrypt, 'w')
+    f = codecs.open(args.decrypt, 'wb')
     try:
-        contents = fernet.decrypt(contents.encode()).decode()
+        contents = fernet.decrypt(contents)
     except:
         print("failed to decrypt")
     f.write(contents)
