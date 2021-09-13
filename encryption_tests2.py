@@ -5,11 +5,15 @@ parser = argparse.ArgumentParser(description='Encrypt and decrypt files')
 parser.add_argument('--password', help="the password used to encrypt and decrypt the given file")
 parser.add_argument('--encrypt', help="encrypts a file")
 parser.add_argument('--decrypt', help="dencrypts a file")
+parser.add_argument('--path')
 args = parser.parse_args()
 
 
 
-password = str(args.password)
+password = args.password
+if password == None:
+    password = input("password: ")
+
 m = hashlib.sha256()
 m.update(password.encode("utf-8"))
 key = base64.urlsafe_b64encode(m.digest())
@@ -25,12 +29,11 @@ def get_file_contents(path):
     return contents
 
 
-if args.encrypt != None:
-    
+def encrypt(path):
     try:
-        contents = get_file_contents(args.encrypt)
+        contents = get_file_contents(path)
         print("encrypting")
-        f = codecs.open(args.encrypt, 'wb')
+        f = codecs.open(path, 'wb')
         try:
             contents = fernet.encrypt(contents)
         except:
@@ -39,7 +42,7 @@ if args.encrypt != None:
         f.close()
 
     except:
-        for dirname, _, filenames in os.walk(str(args.encrypt)):
+        for dirname, _, filenames in os.walk(str(path)):
             for filename in filenames:
                 #print(os.path.join(dirname, filename))
                 
@@ -53,12 +56,12 @@ if args.encrypt != None:
                 f.write(contents)
                 f.close()
 
-if args.decrypt != None:
-    
+
+def decrypt(path):
     try:
-        contents = get_file_contents(args.decrypt)
+        contents = get_file_contents(path)
         print("decrypting")
-        f = codecs.open(args.decrypt, 'wb')
+        f = codecs.open(path, 'wb')
         try:
             contents = fernet.decrypt(contents)
         except:
@@ -67,7 +70,7 @@ if args.decrypt != None:
         f.close()
 
     except:
-        for dirname, _, filenames in os.walk(str(args.decrypt)):
+        for dirname, _, filenames in os.walk(str(path)):
             for filename in filenames:
                 #print(os.path.join(dirname, filename))
                 
@@ -81,5 +84,21 @@ if args.decrypt != None:
                 f.write(contents)
                 f.close()
 
+if args.encrypt != None:
+    encrypt(args.encrypt)
 
+elif args.decrypt != None:
+    decrypt(args.decrypt)
 
+else:
+    type = input("e/d")
+    if args.path != None:
+        if type == "e":
+            encrypt(args.path)
+        elif type == "d":
+            decrypt(args.path)
+    else:
+        if type == "e":
+            encrypt(input("path: "))
+        elif type == "d":
+            decrypt(input("path: "))
